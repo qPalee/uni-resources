@@ -1,0 +1,89 @@
+Q1(a):
+
+
+university = 20 13 8  21 4 17 18 8 19 24
+birmingham = 1  8  17 12 8 13 6  7 0  12
+Plain + Key = 21 21 25 33 12 30 24 15 19 36
+(Plain + Key) mod 26 = 21 21 25 7 12 4 24 15 19 10
+
+Re-encoded: vvzhmeyptk
+
+
+Q1(b):
+The following ciphertext c’ will produce an encryption of 2m:
+c’ = (2^e * c) mod N
+
+
+Enc(PK, 2m) = (2m)^e mod N
+= (2^e * m^e) mod N
+= (2^e * c) mod N
+
+
+Q1(c):
+We request a MAC for m0:
+E_K(m0) = t0
+
+
+We consider:
+m1 = m0 xor t0
+
+
+Then the output of the second block cipher call is:
+E_K(m1 xor t0) = E_K(m0 xor t0 xor t0) = E_K(m0) = t0
+
+
+The tag for m0||m1 = m0||(m0 xor t0) is t0.
+The forgery pair is message: m0||(m0 xor t0) with the tag: t0
+
+
+Q2(a):
+This is not secure, as it would allow an attacker to run Man-in-the-Middle attacks using self-signed certificates. The attacker could decrypt all traffic using its own certificate and re-encrypt and forward the traffic to the intended party.
+
+
+Q2(b):
+This is not possible because the malware-checking server lacks the ephemeral/session keys. By the definition of forward secrecy (session keys will not be compromised even if long-term secrets used in the session key exchange are compromised), the malware-checking server will not be able to decrypt the traffic without the session keys.
+
+
+The webserver could decrypt and re-encrypt the traffic with a key for the malware-checking server. Alternatively, the webserver could also transfer the required session keys to the malware-checking server.
+
+
+Q2(c):
+This scheme does not prevent CSRF attacks because the MAC in the hidden form field is constant for each form (as it is the MAC of the unique identifier only). Thus, the attacker can log in to the webpage, retrieve the form field first, and send along the relevant value.
+
+
+A simple solution is to add a nonce to the the plaintext, which will guarantee different MAC outputs on every request.
+
+
+Q3(a):
+(i)
+— TOP —
+password_buffer (16 bytes)
+canary (1 byte)
+authenticated (4 bytes)
+old EBP (4 bytes)
+return address (4 bytes)
+*password (4 bytes)
+—BOTTOM—
+
+
+(ii) The attack present in the code is a buffer overflow attack in line 6. Strcpy does not check for the length of the buffer (password_buffer, 16 bytes) and will continue writing into the canary and authenticated.
+
+
+(iii) The input needs to be at least 18 bytes. The first 16 bytes can be random; then the 17th byte must be an ‘a’ to pass the canary check, followed by something non-zero – making authenticated non-zero. A concrete example could be: “aaaaaaaaaaaaaaaaaa” (18 a’s)
+
+
+Q3(b):
+(i) A canary is a known value that is placed between buffers and control data to monitor buffer overflows. The canary is validated against the known value to detect an overflow.
+
+
+(ii) In this case, the value of the canary is constant and can be used by the attacker inside their exploit.
+
+
+(iii) A value of 0 would require the attacker to include a null terminating character in the input before they can overwrite the authenticated flag.
+
+
+Q3(c):
+Many solutions are possible here, three examples are:
+* NX bits: These can mark parts of the memory as not executable and can thus prevent running shellcode through a buffer overflow. This protection is ineffective against this exploit as it does not involve code execution.
+* Boundary checking: If the length of password is properly validated before the use of strcpy, this specific exploit can be prevented.
+* ASLR: This mitigation technique randomises the position of key elements in the memory (address space layout randomization). This, for example, makes it harder for an attacker to guess the addresses of functions. However, it would not prevent this specific exploit as the stack still remains the same.

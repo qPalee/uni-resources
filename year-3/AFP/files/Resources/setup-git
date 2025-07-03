@@ -1,0 +1,20 @@
+#!/bin/bash
+
+SSH_DIR=~/.ssh
+SSH_KEY=${SSH_DIR}/gitlab
+
+if [[ ! -f $SSH_KEY ]]; then
+  mkdir -p $SSH_DIR > /dev/null
+  chmod 0700 $SSH_DIR
+  ssh-keygen -t ed25519 -P '' -f $SSH_KEY > /dev/null
+  chmod 0644 ${SSH_KEY}.pub
+  chmod 0600 ${SSH_KEY}
+  echo "SSH key generated."
+fi
+
+echo "You should copy the public key below and paste it into the 'key' field at 'https://git.cs.bham.ac.uk/-/profile/keys':"
+echo ""
+echo ""
+cat ${SSH_KEY}.pub
+echo ""
+echo ""

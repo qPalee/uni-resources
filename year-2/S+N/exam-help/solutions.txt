@@ -1,0 +1,68 @@
+First paper:
+
+Question 1:
+
+(a): Bookwork.
+(b): Use Counter mode, as for CBC mode you would to re-encrypt almost
+the whole disk if you change a block at the beginning of the
+disk. Counter mode is malleable, but you fix this by adding a MAC.
+(c): A man-in-the middle attack will work. Here are the details:
+A -> E(B): g^x
+E(A) -> B: g^(x')
+B-> E(A): g^y
+E(B) -> A: g^(y')
+A thinks the session key is g^(xy'), B thinks the session key is
+g^(x'y), and the attacker knows x' and y', hence the attacker knows
+both keys and can now decrypt all communication from Alice, re-encrypt
+it for Bob and vice versa.
+(d): Yes. The attack works by changing the IV. The modified IV is IV
+\xor M1 \xor M2, where M1 is the message with the old account number
+and M2 is the message with the new account number. To see why this
+works, look at the slide which explains decryption in CBC mode.
+
+Second paper:
+
+Question 2
+(a): Bookwork.
+(b): No. Timestamps are predictable, hence in the Needham-Schroder
+protocol the attacker could guess the key.
+(c): There is an attack. The attacker keeps the part E_A(Sign_B(Pay
+Elvis £5, Pay Elvis £5) from the first protocol round and in the
+second protocol round replaces the message  E_A(Sign_B(Pay
+Charlie £10, Pay Elvis £10) with the message  E_A(Sign_B(Pay
+Elvis £5, Pay Elvis £5).
+(d) One possible attack is:
+A -> E(B): E_B(N_A, A)
+E(A) -> B: E_B(N_A', A)
+B-> A: E_A(N_B, B)
+A -> B: E_B(N_B)
+
+Now A thinks the key is #(N_A, N_B), whereas B thinks the key is
+#(N_A', N_B). Note that the attacker does not learn the key, but this
+was not required.
+
+
+Question 3:
+
+(a)(i): From top to bottom: Password buffer, authenticated, old EBP, old
+EIP, *password.
+(ii): Buffer overflow in line 5 - strcpy does not do any checks and
+copies until it finds a \0 - character.
+(iii): the password buffer is overwritten. If the \0-character is not
+counted as one of the 20 characters, then the first byte of
+authenticated is overwritten as well. Both answers were acceptable.
+(b)(i): The password should consist of 17–19 characters, overwriting the authenticated
+flag. It should not be longer than that to prevent messing with the EIP and EBP.
+(ii) The return address i.e. the EIP on the stack. Also the attacker needs to place a
+shellcode on the stack and jump into it by overwriting EIP.
+(c): Line 6 ensures that the string in password_buffer is at most 15
+characters long. Hence line 7 and 10 work. But the buffer overflow has
+already occurred when line 5 was executed. The fix is to use strncpy
+and copy at most 15 bytes into the password buffer. This makes a
+buffer overflow impossible, and lines 7-9 can be deleted.
+
+
+
+
+
+

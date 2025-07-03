@@ -1,0 +1,69 @@
+=====================
+Commands used in demos
+=====================
+
+
+=== Compiling the examples:
+
+First demo file compiled with:
+
+gcc -fno-stack-protector -z execstack -o nameCheck nameCheck.c -m32
+
+-fno-stack-protector  means no stack protection
+-z execstack means executable stack
+-m32 means 32-bit
+
+E.g
+
+gcc -fno-stack-protector -o nameCheckNX nameCheck.c -m32
+   -> None executable stack, no stack protection 32-bit
+
+gcc -fno-stack-protector -o nameCheckNX64 nameCheck.c 
+   -> None executable stack, no stack protection, 64-bit
+
+gcc -o nameCheckPF nameCheckPF.c 
+  -> None executable stack, stack protection, 64-bit
+
+
+
+=== GDB:
+
+We had install the peda gdb extension: https://github.com/longld/peda
+
+gdb nameCheck : open program in gdb
+
+gdb -p <process ID> : attach gdb to a running process (run as root)
+ps -a  : list running processes
+
+
+Inside gdb:
+
+break <function> :set a break point at the start of <function>
+run : start the program and stop at first breakpoint
+start : start the program and stop at once.
+next: execute line, jumping over function calls
+step: execute line, jumping into function calls
+
+vmmap: print memory map
+
+find "<string>" : search for <string> in memory 
+
+print <function> : print the start address of funcion
+
+checksec : print security options for current binary
+
+
+
+==== Misc:
+
+ readelf -h nameCheck  : print ELF header info, including start point.
+ readelf -r nameCheck  : show where lib functions to be linked.
+ readelf -Ws /lib/i386-linux-gnu/libc-2.27.so. : print the exported functions.
+
+Run binary piping stdin via echo to turn e.g. \x31 into "1"
+while read -r line; do echo -e $line; done | ./nameCheckNX64
+
+Use ropper to find rdi gadgets:
+python Ropper.py --file ../nameCheckNX64 --search "% rdi"
+
+Reverse search on command history : ctrl+r 
